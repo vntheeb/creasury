@@ -1,7 +1,7 @@
 # config valid for current version and patch releases of Capistrano
 lock "~> 3.11.0"
 
-server '178.128.27.96', port: 80, roles: [:web, :app, :db], primary: true
+server '178.128.57.48', roles: [:web, :app, :db], primary: true
 
 set :repo_url, "git@github.com:vntheeb/creasury.git"
 set :application, "creasury"
@@ -33,7 +33,7 @@ set :puma_init_active_record, true  # Change to false when not using ActiveRecor
 # set :keep_releases, 5
 
 ## Linked Files & Directories (Default None):
-# set :linked_files, %w{config/database.yml}
+set :linked_files, %w{config/database.yml config/master.key}
 # set :linked_dirs,  %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
 
 namespace :puma do

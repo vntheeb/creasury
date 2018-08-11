@@ -1,7 +1,7 @@
 # config valid for current version and patch releases of Capistrano
 lock "~> 3.11.0"
 
-server 'creasury.com', roles: [:web, :app, :db], primary: true
+server '178.128.57.48', roles: [:web, :app, :db], primary: true
 
 set :repo_url, "git@github.com:vntheeb/creasury.git"
 set :application, "creasury"

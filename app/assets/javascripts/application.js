@@ -13,4 +13,10 @@
 //= require rails-ujs
 //= require activestorage
 //= require turbolinks
+//= require jquery3
+//= require popper
+//= require bootstrap
+// = require_tree ../../../vendor/assets/javascripts/plugins/.
+//= require now-ui-dashboard
+//= require demo/demo.js
 //= require_tree .

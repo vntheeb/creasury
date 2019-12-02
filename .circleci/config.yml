@@ -7,8 +7,7 @@ jobs:
   rebuild:
     type: approval
   build:
-    requires:
-      - rebuild
+    requires: rebuild
     docker:
       # specify the version you desire here
       - image: circleci/ruby:2.4.1-node-browsers

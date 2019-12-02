@@ -1,11 +1,10 @@
 version: 2
-release-branch-workflow:
-  jobs:
-    - build
-    - request-testing:
-        type: approval
-        requires:
-          - build
-    - deploy-aws:
-        requires:
-          - request-testing
+jobs:
+  - build
+  - request-testing:
+      type: approval
+      requires:
+        - build
+  - deploy-aws:
+      requires:
+        - request-testing

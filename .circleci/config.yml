@@ -1,10 +1,12 @@
 version: 2
-jobs:
-  - build
-  - request-testing:
-      type: approval
-      requires:
-        - build
-  - deploy-aws:
-      requires:
-        - request-testing
+worflows:
+  build-dev:
+    jobs:
+      - build
+      - request-testing:
+          type: approval
+          requires:
+            - build
+      - deploy-aws:
+          requires:
+            - request-testing

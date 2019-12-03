@@ -1,0 +1,869 @@
+schema {
+  query: QueryRoot
+  mutation: MutationRoot
+}
+
+"""account"""
+type Account implements ContextOwner & Node {
+  """
+  The set of contexts which are
+  owned by this entity. These contexts will be available for use
+  exclusively in the organizational hierarchy of the owner. As such the
+  lifetime of the context is tied to that of the implementing
+  entity. See Context/owner for the other side of the relationship.
+  """
+  contexts(after: String, first: Int): ContextConnection!
+  groups(after: String, first: Int): GroupConnection!
+  id: ID!
+}
+
+"""Information on an account relationship"""
+type AccountConnection {
+  edges: [AccountEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Information on an account relationship"""
+type AccountEdge {
+  cursor: String!
+  node: Account!
+}
+
+"""Details about active users"""
+type ActiveUserConnection {
+  edges: [ActiveUserEdge!]!
+  pageInfo: IndexedPageInfo!
+  totalCount: Int!
+}
+
+"""Information about an active user"""
+type ActiveUserEdge {
+  lastActiveDate: Date!
+  node: User!
+}
+
+input AddToAllowedContextGroupsInput {
+  contextId: UUID!
+  groupIds: [ID!]!
+}
+
+"""Add a group, which members will have access to a context"""
+type AddToAllowedContextGroupsPayload {
+  context: Context!
+}
+
+input BillingDetailsInput {
+  address1: String!
+  city: String!
+  companyName: String!
+  country: String!
+  email: String!
+  firstName: String!
+  lastName: String!
+  state: String!
+  zipCode: String!
+}
+
+"""
+Certain properties of a plan (like active user count) apply to specific billing periods.
+"""
+type BillingPeriod {
+  metrics: PlanMetrics!
+  period: DateTimeRange!
+}
+
+"""
+Tells us more about a plan's subscription with billing provider and its status.
+"""
+type BillingSubscription implements Node {
+  billingProvider: PlanBillingProvider!
+  externalCustomerId: String
+  id: ID!
+  status: BillingSubscriptionStatus!
+}
+
+enum BillingSubscriptionStatus {
+  ACTIVE
+  PENDING
+  CANCELED
+  PAST_DUE
+}
+
+"""An error related to a BuildConfig"""
+type ConfigError {
+  message: String!
+}
+
+"""Context that can belong to Account or Organization"""
+type Context implements Node {
+  createdAt: Date!
+  groups(after: String, first: Int): GroupConnection!
+  id: ID!
+  name: String!
+  owner: ContextOwner!
+  resources: [EnvironmentVariable!]!
+}
+
+"""Information about a context."""
+type ContextConnection {
+  edges: [ContextEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Information about a context."""
+type ContextEdge {
+  cursor: String!
+  node: Context!
+}
+
+interface ContextOwner {
+  """
+  The set of contexts which are
+  owned by this entity. These contexts will be available for use
+  exclusively in the organizational hierarchy of the owner. As such the
+  lifetime of the context is tied to that of the implementing
+  entity. See Context/owner for the other side of the relationship.
+  """
+  contexts: ContextConnection!
+}
+
+"""Valid context owners"""
+enum ContextOwnerType {
+  ACCOUNT
+  ORGANIZATION
+}
+
+input CreateContextInput {
+  clientMutationId: String
+  contextName: String!
+  ownerId: ID!
+  ownerType: ContextOwnerType!
+}
+
+"""Metadata on an attempted context creation"""
+type CreateContextPayload {
+  clientMutationId: String
+  context: Context
+  error: CreateContextPayloadError
+}
+
+"""Details for why a context was not created"""
+type CreateContextPayloadError {
+  type: CreateContextPayloadErrorType
+}
+
+enum CreateContextPayloadErrorType {
+  ALREADY_EXISTS
+}
+
+"""Error message for why an orb Namespace could not be created or renamed"""
+type CreateNamespaceError {
+  message: String!
+  type: CreateNamespaceErrorType!
+}
+
+enum CreateNamespaceErrorType {
+  ALREADY_EXISTS
+  INVALID_NAME
+  QUOTA_EXCEEDED
+  AUTHORIZATION_FAILURE
+}
+
+"""Necessary inputs to create a Namespace"""
+type CreateNamespacePayload {
+  errors: [CreateNamespaceError!]
+  namespace: RegistryNamespace
+}
+
+"""Error message for why an Orb name could not be created"""
+type CreateOrbError {
+  message: String!
+  type: CreateOrbErrorType!
+}
+
+enum CreateOrbErrorType {
+  ALREADY_EXISTS
+  INVALID_NAME
+  AUTHORIZATION_FAILURE
+}
+
+"""
+Necessary inputs to create an orb (in effect, reserving orb name within namespace)
+"""
+type CreateOrbPayload {
+  errors: [CreateOrbError!]
+  orb: Orb
+}
+
+enum CreditType {
+  LINUX_OSS
+  LINUX_PRIVATE
+  OSX_PRIVATE
+  OSX_OSS
+}
+
+"""Usage metrics for a specified credit type"""
+type CreditUsageMetrics {
+  credits: Int!
+  seconds: Int!
+}
+
+scalar Date
+
+"""A reusable date and time range"""
+type DateTimeRange {
+  end: Date
+  start: Date!
+}
+
+"""A reusable date and time range"""
+input DateTimeRangeInput {
+  end: Date
+  start: Date!
+}
+
+input DeleteContextInput {
+  clientMutationId: String
+  contextId: UUID
+}
+
+"""Payload for deleting a context"""
+type DeleteContextPayload {
+  clientMutationId: String
+}
+
+"""Environment variable metadata"""
+type EnvironmentVariable {
+  createdAt: Date!
+  truncatedValue: String!
+  variable: String!
+}
+
+"""Plans have features which grant them access to functionality."""
+type Feature {
+  payload: String!
+  quantity: Int!
+  slug: PlanFeatureSlugs!
+}
+
+input FeatureInput {
+  payload: String!
+  quantity: Int!
+  slug: PlanFeatureSlugs!
+}
+
+"""A Revision which is a commit in Git"""
+type GitCommit {
+  SHA: String!
+  body: String
+  subject: String
+}
+
+"""
+A group is extracted from a Provider and can be from a org or an account.
+"""
+type Group implements Node {
+  groupType: GroupType!
+  id: ID!
+  name: String!
+}
+
+"""Information on a group relationship"""
+type GroupConnection {
+  edges: [GroupEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Information on a group relationship"""
+type GroupEdge {
+  cursor: String!
+  node: Group!
+}
+
+enum GroupType {
+  TEAM
+  ORGANIZATION
+  ACCOUNT
+}
+
+"""Pagination metadata for data paged by index rather then cursor"""
+type IndexedPageInfo {
+  endOfPageIndex: Int!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startOfPageIndex: Int!
+}
+
+input InitiateUpgradeToUsageInput {
+  billingId: String
+  clientMutationId: String
+  creditPackages: Int
+  email: String!
+  orgId: String!
+  userSeats: Int
+}
+
+"""
+Payload to initiate upgrade to usage plan (currently only supports Performance)
+"""
+type InitiateUpgradeToUsagePayload {
+  clientMutationId: String
+  planId: String!
+  upgradeUrl: String!
+}
+
+"""Metadata about a job"""
+type Job implements Node {
+  actions: [JobAction!]!
+  buildNumber: Int
+  id: ID!
+  name: String!
+  parents: [Job!]!
+  startedAt: Date
+  status: JobStatus!
+  stoppedAt: Date
+  type: JobType!
+}
+
+"""Action made by actor on job."""
+type JobAction {
+  actor: User!
+  type: JobActionType!
+}
+
+enum JobActionType {
+  APPROVE
+  CANCEL
+}
+
+enum JobStatus {
+  NOT_RUN
+  CANCELED
+  FAILED
+  BLOCKED
+  SUCCESS
+  ON_HOLD
+  RUNNING
+  RETRIED
+  INFRASTRUCTURE_FAIL
+  TIMEDOUT
+  QUEUED
+  SCHEDULED
+  NOT_RUNNING
+  NO_TESTS
+  FIXED
+  UNAUTHORIZED
+}
+
+enum JobType {
+  BUILD
+  APPROVAL
+}
+
+"""Root of all mutations."""
+type MutationRoot {
+  addToAllowedContextGroups(input: AddToAllowedContextGroupsInput!): AddToAllowedContextGroupsPayload!
+  approveJob(id: ID!): String
+
+  """
+  Cancels the Workflow with the given `id`. Always returns null, never a string (but GraphQL doesn't have a void type).
+  """
+  cancelWorkflow(id: ID!): String
+  createContext(input: CreateContextInput!): CreateContextPayload!
+  createNamespace(name: String!, organizationId: UUID!): CreateNamespacePayload!
+  createOrb(homeUrl: String, name: String!, registryNamespaceId: UUID!): CreateOrbPayload!
+  deleteContext(input: DeleteContextInput!): DeleteContextPayload!
+  initiateUpgradeToUsage(input: InitiateUpgradeToUsageInput!): InitiateUpgradeToUsagePayload!
+  promoteOrb(devVersion: String!, orbId: UUID!, semanticVersion: String!): PromoteOrbPayload!
+  publishOrb(orbId: UUID!, orbYaml: String!, version: String!): PublishOrbPayload!
+  refreshUserPermissions: RefreshUserPermissionsPayload!
+  removeEnvironmentVariable(input: RemoveEnvironmentVariableInput!): RemoveEnvironmentVariablePayload!
+  removeFromAllowedContextGroups(input: RemoveFromAllowedContextGroupsInput!): RemoveFromAllowedContextGroupsPayload!
+  renameNamespace(namespaceId: UUID!, newName: String!): CreateNamespacePayload!
+
+  """
+  Reruns the Workflow with the given `id`. `from: BEGINNING` (default) reruns
+  all jobs, while `from: FAILED` reruns only from failed jobs. Always returns
+  null, never a string (but GraphQL doesn't have a void type).
+  """
+  rerunWorkflow(from: RerunWorkflowFromOption, id: ID!): String
+  setOrbListStatus(list: Boolean!, orbId: UUID!): SetOrbListStatusPayload!
+  storeEnvironmentVariable(input: StoreEnvironmentVariableInput!): StoreEnvironmentVariablePayload!
+  upgradeToPaid(input: UpgradeToPaidInput!): UpgradeToPaidPayload!
+}
+
+"""Major business-object types should always implement Node."""
+interface Node {
+  id: ID!
+}
+
+"""A reusable orb of config"""
+type Orb implements Node {
+  createdAt: Date!
+  homeUrl: String
+  id: ID!
+  name: String!
+  namespace: RegistryNamespace!
+  statistics: OrbStatistics!
+  versions(count: Int): [OrbVersion!]
+}
+
+"""A page of orb relationships"""
+type OrbConnection {
+  edges: [OrbEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Information about an orb relationship"""
+type OrbEdge {
+  cursor: String!
+  node: Orb!
+}
+
+"""Aggregated statistics of an orb"""
+type OrbStatistics {
+  last30DaysBuildCount: Int!
+  last30DaysOrganizationCount: Int!
+  last30DaysProjectCount: Int!
+}
+
+"""A specific version of an orb and its source"""
+type OrbVersion implements Node {
+  createdAt: Date!
+  id: ID!
+  notes: String
+  orb: Orb!
+  source: String!
+  version: String!
+}
+
+"""organization on VCS provider """
+type Organization implements ContextOwner & Node {
+  """
+  The set of contexts which are
+  owned by this entity. These contexts will be available for use
+  exclusively in the organizational hierarchy of the owner. As such the
+  lifetime of the context is tied to that of the implementing
+  entity. See Context/owner for the other side of the relationship.
+  """
+  contexts(after: String, first: Int): ContextConnection!
+  externalLinks: OrganizationExternalLinks!
+  groups(after: String, first: Int): GroupConnection!
+  id: ID!
+  name: String!
+  plan: Plan!
+  vcsType: VCSType!
+}
+
+"""external support links for Organization"""
+type OrganizationExternalLinks {
+  """Url to enable Checks feature, if available"""
+  githubChecksInstall: String
+}
+
+"""Pagination metadata"""
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+input PerformancePlanInput {
+  features: [FeatureInput]
+  highWaterMark: Int!
+  lowWaterMark: Int!
+  tier: Tier
+}
+
+"""A single plan can be associated with multiple organizations."""
+type Plan implements Node {
+  billingPeriods(numPeriods: Int = 1): [BillingPeriod!]!
+  billingProvider: PlanBillingProvider @deprecated(reason: "use billingSubscription.billingProvider")
+  billingSubscription: BillingSubscription
+  creditsAvailable: Int!
+  externalManagementPortalLink: String
+  features: [Feature!]!
+  id: ID!
+  metrics(dateRange: DateTimeRangeInput!): PlanMetrics!
+  settings: PlanSettings!
+  subscriptionStatus: PlanSubscriptionStatus @deprecated(reason: "use billingSubscription.status")
+  tier: Tier!
+  totalCreditAllocation: Int!
+  upgradeSuggestions: UpgradeSuggestions!
+}
+
+enum PlanBillingProvider {
+  CHARGIFY
+  ZUORA
+}
+
+enum PlanFeatureSlugs {
+  SUPPORT_TIER_STANDARD
+  SUPPORT_TIER_SILVER
+  SUPPORT_TIER_GOLD
+  SUPPORT_TIER_PLATINUM
+  SEATS_PERFORMANCE
+  FLEXIBLE_RESOURCE_ALLOCATION
+  DOCKER_LAYER_CACHING
+  CREDITS
+}
+
+"""Individual Metrics relating to a Plan"""
+type PlanMetric {
+  computeCredits: Int!
+  credits: Int!
+  dlcCredits: Int!
+  seconds: Int!
+}
+
+"""A set of Metrics relating to a Plan"""
+type PlanMetrics {
+  activeUsers(first: Int, offset: Int): ActiveUserConnection!
+  byCreditType(creditType: CreditType!): CreditUsageMetrics!
+  byProject: UsageMetricByProjectConnection!
+  projects(filter: PlanProjectListFilter): ProjectConnection!
+  total: PlanMetric!
+}
+
+input PlanProjectListFilter {
+  usingDLC: Boolean
+}
+
+"""A plan's settings that can be modified by the user."""
+type PlanSettings {
+  creditRefillAmount: Int
+  creditRefillThreshold: Int
+  creditReloadAmount: Int @deprecated(reason: "Use :creditRefillAmount")
+  creditReloadThreshold: Int @deprecated(reason: "Use :creditRefillThreshold")
+}
+
+enum PlanSubscriptionStatus {
+  ACTIVE
+  PENDING
+  CANCELED
+  PAST_DUE
+}
+
+"""Holds all our plan pricing information"""
+type PricingModel {
+  costPerActiveUser: [PricingRangeValue]
+  costPerCredit: [PricingRangeValue]
+  resourceClasses: [ResourceClass]
+}
+
+"""Used to define the cost of things at different ranges; bulk discounts"""
+type PricingRangeValue {
+  cost: Int!
+  minimumBuy: Int!
+}
+
+"""A config yml file"""
+type ProcessedConfig {
+  errors: [ConfigError!]!
+  outputYaml: String
+  sourceYaml: String!
+  valid: Boolean!
+}
+
+"""Project details"""
+type Project implements Node {
+  id: ID!
+  name: String!
+  organization: Organization
+}
+
+"""Details about project metrics; currently just a count."""
+type ProjectConnection {
+  totalCount: Int!
+}
+
+"""An error related to promoting an orb from dev to semver"""
+type PromoteError {
+  message: String!
+}
+
+"""Payload sent after promoting an orb. Similar to PublishOrbPayload."""
+type PromoteOrbPayload {
+  errors: [PromoteError!]!
+  orb: OrbVersion
+}
+
+"""Payload sent after publishing an orb"""
+type PublishOrbPayload {
+  errors: [ConfigError!]!
+  orb: OrbVersion
+}
+
+"""Metadata specific to a pull request"""
+type PullRequest {
+  URL: String!
+  headSHA: String!
+}
+
+"""Root of all queries."""
+type QueryRoot {
+  account(id: ID!): Account!
+
+  """
+  Load the contents of a build config (.circleci/config.yml) and check if it's valid.
+  """
+  buildConfig(configYaml: String!): ProcessedConfig
+  context(id: ID!): Context!
+  job(id: ID!): Job!
+  me: User
+  orb(name: String): Orb
+
+  """Load the contents of an orb (orb.yml) and check if it's valid."""
+  orbConfig(orbYaml: String!): ProcessedConfig
+  orbVersion(orbVersionRef: String): OrbVersion
+  orbs(after: String, certifiedOnly: Boolean, first: Int): OrbConnection!
+  organization(id: ID, name: String, vcsType: VCSType): Organization!
+  plan(orgId: String!): Plan!
+  registryNamespace(name: String): RegistryNamespace
+  registryNamespaces(after: String, first: Int): RegistryNamespaceConnection!
+  user(id: ID!): User
+  workflow(id: ID!): Workflow!
+}
+
+"""A symbolic reference to a revision of config."""
+type Ref {
+  name: String!
+  type: RefType!
+}
+
+"""An error related to the RefreshUserPermissions mutation"""
+type RefreshUserPermissionsError {
+  type: RefreshUserPermissionsErrorType
+}
+
+enum RefreshUserPermissionsErrorType {
+  AUTHENTICATION_FAILURE
+}
+
+"""Doesn't include anything interesting yet."""
+type RefreshUserPermissionsPayload {
+  errors: [RefreshUserPermissionsError!]!
+}
+
+enum RefType {
+  GIT_BRANCH
+  GIT_TAG
+}
+
+"""A namespace of orbs"""
+type RegistryNamespace implements Node {
+  createdAt: Date!
+  id: ID!
+  isCertified: Boolean!
+  name: String!
+  orbs(after: String, first: Int): OrbConnection!
+}
+
+"""A page of registry namespace relationships"""
+type RegistryNamespaceConnection {
+  edges: [RegistryNamespaceEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Information about a registry namespace relationship"""
+type RegistryNamespaceEdge {
+  cursor: String!
+  node: RegistryNamespace!
+}
+
+input RemoveEnvironmentVariableInput {
+  clientMutationId: String
+  contextId: UUID
+  variable: String!
+}
+
+"""Necessary inputs to remove an environment variable"""
+type RemoveEnvironmentVariablePayload {
+  clientMutationId: String
+  context: Context!
+}
+
+input RemoveFromAllowedContextGroupsInput {
+  contextId: UUID!
+  groupIds: [ID!]!
+}
+
+"""Add a group, which members will have access to a context"""
+type RemoveFromAllowedContextGroupsPayload {
+  context: Context!
+}
+
+enum RerunWorkflowFromOption {
+  BEGINNING
+  FAILED
+}
+
+"""Different machine sizes and credit cost per minute"""
+type ResourceClass {
+  creditsPerMinute: Int!
+  name: String
+  numCpus: Int
+  ramSize: Int
+}
+
+union Revision = GitCommit
+
+"""An error related to setting the listed status of an orb"""
+type SetOrbListStatusError {
+  message: String!
+  type: SetOrbListStatusErrorType!
+}
+
+enum SetOrbListStatusErrorType {
+  INVALID_NAME
+  AUTHORIZATION_FAILURE
+}
+
+"""Payload sent after setting the listed status of an orb."""
+type SetOrbListStatusPayload {
+  errors: [SetOrbListStatusError!]
+  listed: Boolean
+}
+
+input StoreEnvironmentVariableInput {
+  clientMutationId: String
+  contextId: ID!
+  value: String!
+  variable: String!
+}
+
+"""Necessary inputs to store an environment variable"""
+type StoreEnvironmentVariablePayload {
+  clientMutationId: String
+  context: Context!
+  error: StoreEnvironmentVariablePayloadError
+}
+
+"""Error message for why an environment variable couldn't be stored"""
+type StoreEnvironmentVariablePayloadError {
+  type: StoreEnvironmentVariablePayloadErrorType
+}
+
+enum StoreEnvironmentVariablePayloadErrorType {
+  ALREADY_EXISTS
+}
+
+enum Tier {
+  FREE
+  PERFORMANCE
+  CUSTOM
+  CUSTOM_PERFORMANCE
+}
+
+"""
+Provide suggestions for settings that would be suitable for a performance plan signup based on past usage.
+"""
+type UpgradeSuggestions {
+  suggestedCredits: Int!
+  suggestedMilliseconds: String!
+  suggestedSeats: Int!
+}
+
+input UpgradeToPaidInput {
+  billingDetails: BillingDetailsInput!
+  billingId: String!
+  clientMutationId: String
+  orgId: String!
+  plan: PerformancePlanInput!
+}
+
+"""Payload to upgrade to a paid plan"""
+type UpgradeToPaidPayload {
+  clientMutationId: String
+  orgId: String!
+  planId: String!
+}
+
+"""Usage metrics for an individual project"""
+type UsageMetricByProject {
+  aggregate: PlanMetric!
+  project: Project!
+}
+
+"""Plan usage metrics aggregated by projects"""
+type UsageMetricByProjectConnection {
+  nodes: [UsageMetricByProject!]!
+}
+
+"""The representation of a User"""
+type User implements Node {
+  accounts(after: String, first: Int): AccountConnection!
+  avatarURL: String
+  id: ID!
+  name: String
+}
+
+scalar UUID
+
+"""A VCS provider"""
+enum VCSType {
+  GITHUB
+  BITBUCKET
+}
+
+"""A Workflow"""
+type Workflow implements Node {
+  actions: [WorkflowAction!]!
+  createdAt: Date!
+  errors: [WorkflowError!]!
+  id: ID!
+  jobs: [Job!]!
+  name: String!
+  project: Project!
+  pullRequests: [PullRequest!]!
+  ref: Ref!
+  revision: Revision!
+  startedAt: Date
+  status: WorkflowStatus!
+  stoppedAt: Date
+}
+
+"""Action made by actor on workflow."""
+type WorkflowAction {
+  actor: User!
+  type: WorkflowActionType!
+}
+
+enum WorkflowActionType {
+  TRIGGER
+  CANCEL
+}
+
+"""Information on a workflow run dependency"""
+type WorkflowEdge {
+  node: Workflow!
+}
+
+"""Details on why a workflow failed"""
+type WorkflowError {
+  message: String!
+}
+
+"""Information on a workflow run dependency"""
+type WorkflowsConnection {
+  edges: [WorkflowEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+enum WorkflowStatus {
+  ERROR
+  NOT_RUN
+  CANCELED
+  FAILING
+  FAILED
+  SUCCESS
+  ON_HOLD
+  RUNNING
+  UNAUTHORIZED
+}
+
